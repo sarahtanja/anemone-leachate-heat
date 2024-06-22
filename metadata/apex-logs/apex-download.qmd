@@ -21,7 +21,7 @@ todaysdate <- format(Sys.Date(), format = "%y%m%d")
 #Rack5url <- paste0('http://192.168.1.15/cgi-bin/datalog.xml?sdate=',todaysdate,'&days=3')
 #Rack3url <- paste0('http://192.168.1.13/cgi-bin/datalog.xml?sdate=',todaysdate,'&days=3')
 #Rack4url <- paste0('http://192.168.1.14/cgi-bin/datalog.xml?sdate=',todaysdate,'&days=3'
-seatablesurl <- paste0('http://192.168.1.16/cgi-bin/datalog.xml?sdate=',todaysdate,'&days=7')
+seatablesurl <- paste0('http://192.168.1.16/cgi-bin/datalog.xml?sdate=',todaysdate,'&days=3')
 ```
 
 ```{r}
