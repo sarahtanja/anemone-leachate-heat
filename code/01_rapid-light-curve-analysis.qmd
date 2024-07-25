@@ -47,7 +47,6 @@ We've done this consecutively and with repeated measures across 5 days (here we 
 Here we pull in the metadata for each day of rapid light curve measurements taken prior to, and daily during, the experiment.   
 
 ```{r}
-metadata_0617 <- read_csv("../metadata/rlc_metadata_06172024.csv")
 metadata_0619 <- read_csv("../metadata/rlc_metadata_06192024.csv")
 metadata_0620 <- read_csv("../metadata/rlc_metadata_06202024.csv")
 metadata_0621 <- read_csv("../metadata/rlc_metadata_06212024.csv")
