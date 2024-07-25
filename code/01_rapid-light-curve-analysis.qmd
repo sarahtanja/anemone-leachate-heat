@@ -103,13 +103,12 @@ for (i in seq_along(start_indices)) {
 ```
 
 
+## Fill in sample_id
+
+
 ```{r}
 
-# If sample_id column is NA across from FO, then filter out the group? Or filter to keep only groups where sample_id column is not NA in FO row.... 
-
-# If only I could fill up 2 and down 12... and then delete everything left that has an NA ?
-
-rlc_fill <- rlc_mer_0619 %>% 
+rlc_fill <- rlc_0619 %>% 
   filter(Type %in% c("REG1", "REG2", "FO")) %>% 
   fill(leachate, .direction = "up") %>% 
   fill(sample_id, .direction = "up") %>%
@@ -118,11 +117,8 @@ rlc_fill <- rlc_mer_0619 %>%
   fill(temp, .direction = "up") %>% 
   fill(aggregate, .direction = "up") %>%
   fill(species, .direction = "up") %>%
-  #fill("1:Fv/Fm", .direction = "up") %>% 
-  #filter(No. == lead(RLC_start)) %>% 
-  #select(No., "1:F","1:Fv/Fm", id, treatment )
+  fill("1:Fv/Fm", .direction = "up")
 
-rlc_fill
 ```
 
 ## QAQC
