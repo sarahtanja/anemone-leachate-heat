@@ -290,10 +290,9 @@ for (i in seq_along(list_rlc_0622)){
 ```{r}
 # Define a regex pattern to extract alpha, ETRm, and Ik values
 regex <- "alpha: ([\\d.-]+), ETRm: ([\\d.-]+), Ik: ([\\d.-]+)"
-
 ```
 
-For 06/19, 1st day of exposure
+### Day 1 | regression_0619 
 ```{r}
 # Initialize a regression dataframe
 regression_0619 <- data.frame()
@@ -321,7 +320,7 @@ for (i in seq_along(list_rlc_0619)){
 }
 ```
 
-For 06/20, 2nd day of exposure
+### Day 2 | regression_0620
 ```{r}
 # Initialize a regression dataframe
 regression_0620 <- data.frame()
@@ -337,18 +336,74 @@ for (i in seq_along(list_rlc_0620)){
     #filter(Type %in% c('REG1','REG2')) %>% 
     filter(Type %in% 'REG2') %>%
     filter(!is.na(sample_id)) %>% 
-    mutate(days_of_exposure = 2)
+    mutate(days_of_exposure = 2) %>% 
+    mutate(treatment = str_c(temp, leachate, sep = "_")) %>% 
+    mutate(treatment = as.factor(treatment)) %>% 
+    mutate(alpha = as.numeric(alpha)) %>% 
+    mutate(ETRm = as.numeric(ETRm)) %>% 
+    mutate(Ik = as.numeric(Ik))
   
-  # Append the modified dataframe to the regression_0619 data frame
+  # Append the modified dataframe to the regression_0620 data frame
   regression_0620 <- bind_rows(regression_0620, jasby_platt)
 }
 ```
 
+### Day 3 | regression_0621
 
+```{r}
+# Initialize a regression dataframe
+regression_0621 <- data.frame()
 
+# Extract the rows that match the pattern
+for (i in seq_along(list_rlc_0621)){
+  jasby_platt <- list_rlc_0621[[i]] %>%
+  mutate(match = str_extract(`1:F`, regex)) %>%
+  mutate(alpha = str_extract(match, "(?<=alpha: )[\\d.-]+"),
+         ETRm = str_extract(match, "(?<=ETRm: )[\\d.-]+"),
+         Ik = str_extract(match, "(?<=Ik: )[\\d.-]+")) %>% 
+    select(Date, Time, Type, sample_id, condition, temp, aggregate, leachate,'1:F', alpha, ETRm, Ik) %>% 
+    #filter(Type %in% c('REG1','REG2')) %>% 
+    filter(Type %in% 'REG2') %>%
+    filter(!is.na(sample_id)) %>% 
+    mutate(days_of_exposure = 3) %>% 
+    mutate(treatment = str_c(temp, leachate, sep = "_")) %>% 
+    mutate(treatment = as.factor(treatment)) %>% 
+    mutate(alpha = as.numeric(alpha)) %>% 
+    mutate(ETRm = as.numeric(ETRm)) %>% 
+    mutate(Ik = as.numeric(Ik))
+  
+  # Append the modified dataframe to the regression_0621 data frame
+  regression_0621 <- bind_rows(regression_0621, jasby_platt)
+}
+```
 
+### Day 4 | regression_0622 
+```{r}
+# Initialize a regression dataframe
+regression_0622 <- data.frame()
 
-
+# Extract the rows that match the pattern
+for (i in seq_along(list_rlc_0622)){
+  jasby_platt <- list_rlc_0622[[i]] %>%
+  mutate(match = str_extract(`1:F`, regex)) %>%
+  mutate(alpha = str_extract(match, "(?<=alpha: )[\\d.-]+"),
+         ETRm = str_extract(match, "(?<=ETRm: )[\\d.-]+"),
+         Ik = str_extract(match, "(?<=Ik: )[\\d.-]+")) %>% 
+    select(Date, Time, Type, sample_id, condition, temp, aggregate, leachate,'1:F', alpha, ETRm, Ik) %>% 
+    #filter(Type %in% c('REG1','REG2')) %>% 
+    filter(Type %in% 'REG2') %>%
+    filter(!is.na(sample_id)) %>% 
+    mutate(days_of_exposure = 4) %>% 
+    mutate(treatment = str_c(temp, leachate, sep = "_")) %>% 
+    mutate(treatment = as.factor(treatment)) %>% 
+    mutate(alpha = as.numeric(alpha)) %>% 
+    mutate(ETRm = as.numeric(ETRm)) %>% 
+    mutate(Ik = as.numeric(Ik))
+  
+  # Append the modified dataframe to the regression_0621 data frame
+  regression_0622 <- bind_rows(regression_0622, jasby_platt)
+}
+```
 
 ```{r}
 # rename FvFm & make numeric
