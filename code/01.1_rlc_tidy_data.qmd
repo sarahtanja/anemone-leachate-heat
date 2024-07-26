@@ -1,5 +1,5 @@
 ---
-title: "Quasi Dark-Adapted Rapid Light Curve Analysis"
+title: "Tidy up the data"
 subtitle: "From measurements taken by a Walz Diving PAMII"
 author: "Sarah Tanja"
 date: "`r format(Sys.time(), '%d %B, %Y')`"  
@@ -21,6 +21,11 @@ editor:
   markdown: 
     wrap: 72
 ---
+
+# Overview
+
+Quasi dark-adapted rapid light curve analysis from measurements taken by
+a Walz Diving PAMII...
 
 # Install and load packages
 
@@ -101,21 +106,40 @@ rlc_0621 <- left_join(rlc_0621, metadata_0621, by = "No.")
 rlc_0622 <- left_join(rlc_0622, metadata_0622, by = "No.") 
 ```
 
+## QAQC
+
+sample_id list
+
+```{r}
+sample_id <- metadata_0619$sample_id
+```
+
+each should have 60 'matches' of sample ID to light curve start
+
+```{r}
+rlc_0619 %>% filter(!is.na(sample_id))
+rlc_0620 %>% filter(!is.na(sample_id))
+rlc_0621 %>% filter(!is.na(sample_id))
+rlc_0622 %>% filter(!is.na(sample_id))
+```
+
 # Section data
 
 ## Identify start and end indices, & extract RLC's
+
 Markers for each RLC (inclusive of regression rows)
 
-### Day 1 | June 19th 2024
+#### Day 1 \| June 19th 2024
+
 ```{r}
 # Identify the start and end indices (aka dataframe rows) for each RLC
 start_indices <- which(rlc_0619$Sync == "LCS")-2 # here we subtract 2 'rows' from the rapid light curve start row to include REG1 and REG2
 end_indices <- which(rlc_0619$Sync == "LCE")
 ```
 
+Each RLC should be inclusive of the start and end markers and the
+regression data. We'll use a loop to go through each start and end pair
 
-Each RLC should be inclusive of the start and end markers and the regression data. 
-We'll use a loop to go through each start and end pair
 ```{r}
 # Initialize a list to store the dataframes
 list_rlc_0619 <- list()
@@ -130,7 +154,8 @@ for (i in seq_along(start_indices)) {
 }
 ```
 
-### Day 2 | June 20th 2024
+#### Day 2 \| June 20th 2024
+
 ```{r}
 # Identify the start and end indices (aka dataframe rows) for each RLC
 start_indices <- which(rlc_0620$Sync == "LCS")-2 # here we subtract 2 'rows' from the rapid light curve start row to include REG1 and REG2
@@ -150,7 +175,9 @@ for (i in seq_along(start_indices)) {
   list_rlc_0620[[i]] <- chunk
 }
 ```
-### Day 3 | June 21st 2024
+
+#### Day 3 \| June 21st 2024
+
 ```{r}
 # Identify the start and end indices (aka dataframe rows) for each RLC
 start_indices <- which(rlc_0621$Sync == "LCS")-2 # here we subtract 2 'rows' from the rapid light curve start row to include REG1 and REG2
@@ -170,7 +197,9 @@ for (i in seq_along(start_indices)) {
   list_rlc_0621[[i]] <- chunk
 }
 ```
-### Day 4 | June 2nd 2024
+
+#### Day 4 \| June 2nd 2024
+
 ```{r}
 # Identify the start and end indices (aka dataframe rows) for each RLC
 start_indices <- which(rlc_0622$Sync == "LCS")-2 # here we subtract 2 'rows' from the rapid light curve start row to include REG1 and REG2
@@ -190,7 +219,6 @@ for (i in seq_along(start_indices)) {
   list_rlc_0622[[i]] <- chunk
 }
 ```
-
 
 ## Fill in metadata to all rows
 
@@ -292,7 +320,8 @@ for (i in seq_along(list_rlc_0622)){
 regex <- "alpha: ([\\d.-]+), ETRm: ([\\d.-]+), Ik: ([\\d.-]+)"
 ```
 
-### Day 1 | regression_0619 
+### Day 1 \| regression_0619
+
 ```{r}
 # Initialize a regression dataframe
 regression_0619 <- data.frame()
@@ -320,7 +349,8 @@ for (i in seq_along(list_rlc_0619)){
 }
 ```
 
-### Day 2 | regression_0620
+### Day 2 \| regression_0620
+
 ```{r}
 # Initialize a regression dataframe
 regression_0620 <- data.frame()
@@ -348,7 +378,9 @@ for (i in seq_along(list_rlc_0620)){
 }
 ```
 
-### Day 3 | regression_0621
+> Why are there only 57 rows!?
+
+### Day 3 \| regression_0621
 
 ```{r}
 # Initialize a regression dataframe
@@ -377,7 +409,10 @@ for (i in seq_along(list_rlc_0621)){
 }
 ```
 
-### Day 4 | regression_0622 
+> Why are there only 58 rows!?
+
+### Day 4 \| regression_0622
+
 ```{r}
 # Initialize a regression dataframe
 regression_0622 <- data.frame()
@@ -405,309 +440,23 @@ for (i in seq_along(list_rlc_0622)){
 }
 ```
 
-```{r}
-# rename FvFm & make numeric
-photobot_results <- photobot_results %>% 
-  rename(FvFm = "1:Fv/Fm") 
+> Why are there only 58 rows!?
 
-photobot_results <- photobot_results %>% 
-  mutate(alpha = as.numeric(alpha)) %>% 
-  mutate(ETRm = as.numeric(ETRm)) %>% 
-  mutate(Ik = as.numeric(Ik))
-
-print(photobot_results)
-
-```
-
-# Make treatment a factor
+# Save regression dataframes as .csv
 
 ```{r}
-photobot_results <- photobot_results %>% 
-  mutate(treatment = as.factor(treatment))
-
-class(photobot_results$treatment)
+write.csv(regression_0619, file = "../output/reg_day1.csv" )
+write.csv(regression_0620, file = "../output/reg_day2.csv" )
+write.csv(regression_0621, file = "../output/reg_day3.csv" )
+write.csv(regression_0622, file = "../output/reg_day4.csv" )
 ```
 
-# Fv/Fm
+::: callout-important
+Tidy up Fv/Fm data from dark-adapted measurements in
+`01.2_fvfm_tidy_data.qmd`.
 
-```{r}
-fvfm_aov <- aov(FvFm ~ treatment,
-  data = photobot_results
-)
-
-summary(fvfm_aov)
-```
-
-```{r}
-
-FvFm <- ggplot(photobot_results) +
-  aes(x = treatment, y = FvFm, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. Photosynthetic efficiency (Fv/Fm)",
-    x = "Leachate concentration (mg/L)",
-    y = "Photosynthetic efficiency (Fv/Fm)"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100","PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4","dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4")) 
-
-FvFm
-
-# Save the ggplot object to a PNG file
-ggsave(filename = "FvFm.png", plot = FvFm, width = 11, height = 6, dpi = 600)
-
-```
-
-# Alpha
-## Day 1
-```{r}
-Alpha_1 <- ggplot(regression_0619) +
-  aes(x = treatment, y = alpha, fill= leachate) +
-  geom_boxplot() +
-  scale_x_discrete(limits = c("ambient_control", "hot_control", 
-                              "ambient_low", "hot_low", 
-                              "ambient_high", "hot_high")) +
-  scale_y_continuous(breaks = pretty(regression_0619$alpha, n = 5)) + # Limit number of ticks
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Alpha values on the 1st day of exposure",
-    x = "",
-    y = "Alpha"
-  ) 
-
-Alpha_1
-
-# Save the ggplot object to a PNG file
-#ggsave(filename = "Alpha.png", plot = Alpha, width = 11, height = 6, dpi = 300)
-```
-
-## anova
-temp
-```{r}
-alpha_aov <- aov(alpha ~ temp,
-  data = regression_0619
-)
-
-summary(alpha_aov)
-```
-
-leachate
-```{r}
-alpha_aov <- aov(alpha ~ leachate,
-  data = regression_0619
-)
-
-summary(alpha_aov)
-```
-temp*leachate
-```{r}
-alpha_aov <- aov(alpha ~ temp*leachate,
-  data = regression_0619
-)
-
-summary(alpha_aov)
-```
-
-
-
-
-### plot
-
-```{r}
-PVCAlpha <- ggplot(photobot_pvc) +
-  aes(x = treatment, y = alpha, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. Alpha",
-    x = "Leachate concentration (mg/L)",
-    y = "Alpha"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4")) 
-
-PVCAlpha
-
-# Save the ggplot object to a PNG file
-ggsave(filename = "PVCAlpha.png", plot = PVCAlpha, width = 11, height = 6, dpi = 300)
-
-```
-
-Alpha (α) Definition: Alpha (α) is defined as the initial slope of the
-Rapid Light Curve at low light intensities. It represents the
-photosynthetic efficiency, indicating how effectively a photosynthetic
-organism can use available light for photosynthesis under low light
-conditions. A higher alpha value indicates that the photosynthetic
-organism is highly efficient at utilizing low light levels, which can be
-crucial for survival in shaded or low-light environments. Conversely, a
-lower alpha suggests less efficiency in low light conditions. The alpha
-value is calculated from the initial linear portion of the Rapid Light
-Curve. It is determined by fitting a straight line to the data points at
-the lowest light intensities and calculating the slope of this line. The
-steeper the slope, the higher the photosynthetic efficiency at low
-light.
-
-### anova
-
-```{r}
-alpha_pvc_aov <- aov(alpha ~ treatment,
-  data = photobot_pvc
-)
-
-summary(alpha_pvc_aov)
-```
-
-### Dunnett's test
-
-Is the lowest PVC leachate concentration actually larger than the
-control? Or is this a `Type II error`, or error of multiple tests? I
-followed the [stats and r blog to conduct a post-hoc Dunnett's
-test](https://statsandr.com/blog/anova-in-r/#post-hoc-test:~:text=plot(TukeyHSD(res_aov))-,Dunnett%E2%80%99s%20test,-We%20have%20seen)
-on the above ANOVA result.
-
-```{r}
-if ("multcomp" %in% rownames(installed.packages()) == 'FALSE') install.packages('multcomp')
-library(multcomp)
-
-# Make sure `treatment` is a factor
-
-
-# Dunnett's test:
-post_test <- glht(alpha_pvc_aov,
-  linfct = mcp(treatment = "Dunnett")
-)
-
-summary(post_test)
-```
-
-::: callout-warning
-The Dunnett's test adjusted *p* value comparing the lowest PVC
-concentration to the control (*p* = .0671) indicated that the treatment
-is not significantly different from the control.
+Proceed with analysis of calculated RLC regression variables from Jasby
+& Platt (1976) (rERTm, Ik, Alpha) and dark adapted quantum yield (Fv/Fm)
+by running two-way anovas and doing initial data visualization in
+`02_anovas.qmd`
 :::
-
-::: callout-note
-Note that in R, by default, the reference category for a [factor
-variable](https://statsandr.com/blog/data-types-in-r/#factor) is the
-first category in alphabetical order. This is the reason that, by
-default, the reference species is `Control`.
-
-The reference category can be changed with the `relevel()` function (or
-with the [`{questionr}`
-addin](https://statsandr.com/blog/rstudio-addins-or-how-to-make-your-coding-life-easier/#reordering-factors)).
-Look
-[here](https://statsandr.com/blog/anova-in-r/#post-hoc-test:~:text=%23%20Change%20reference%20category%3A)
-for an example.
-:::
-
-Examining the 95% family-wise confidence level comparing the treatments
-to the controls:
-
-```{r}
-
-# Open the PNG device
-png(filename = "Dunnett.png", width = 800, height = 600, res = 72)
-
-### use sufficiently large upper margin
-old.par <- par(mai=c(1,2.25,1.25,0.25), no.readonly=TRUE)
-### plot
-plot(post_test)
-par(old.par)
-
-# Close the device
-dev.off()
-
-```
-
-```{r}
-### use sufficiently large upper margin
-old.par <- par(mai=c(1,2.25,1.25,0.25))
-### plot
-plot(post_test)
-par(old.par)
-```
-
-## PP only?
-
-```{r}
-photobot_pp <- photobot_results %>% 
-  filter(treatment %in% c('Control', 'PP_A_0.01_mgL', 'PP_A_0.1_mgL', 'PP_A_1_mgL', 'PP_A_10_mgL', 'PP_A_100_mgL'))
-
-photobot_pp
-```
-
-```{r}
-alpha_pp_aov <- aov(alpha ~ treatment,
-  data = photobot_pp
-)
-
-summary(alpha_pp_aov)
-```
-
-```{r}
-ggplot(photobot_pp) +
-  aes(x = treatment, y = alpha, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. Alpha",
-    x = "Leachate concentration (mg/L)",
-    y = "Alpha"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4"))
-```
-
-# ETRm
-
-```{r}
-etrm_aov <- aov(ETRm ~ treatment,
-  data = photobot_results
-)
-
-summary(etrm_aov)
-```
-
-```{r}
-ggplot(photobot_results) +
-  aes(x = treatment, y = ETRm, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. rETRm",
-    x = "Leachate concentration (mg/L)",
-    y = "rETRm"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100","PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4","dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4"))
-```
-
-# Ik
-
-```{r}
-ik_aov <- aov(Ik ~ treatment,
-  data = photobot_results
-)
-
-summary(ik_aov)
-```
-
-```{r}
-Ik <- ggplot(photobot_results) +
-  aes(x = treatment, y = Ik, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Leachate concentration vs. Saturating Irradiance (Ik)",
-    x = "Leachate concentration (mg/L)",
-    y = "Saturating Irradiance (PAR umol/m2/s)"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100","PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4","dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4"))
-
-Ik
-
-```
-
-What the hell is wrong with the control!?

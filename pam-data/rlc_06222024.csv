@@ -1,7 +1,4 @@
 ﻿Sync,Date,Time,Type,No.,1:F,1:Fm',1:PAR,1:Y (II),1:ETR,1:Fo',1:ETR-F.,1:qP,1:qN,1:qL,1:NPQ,1:Y (NO),1:Y (NPQ),1:Fo,1:Fm,1:Fv/Fm
-,24-07-22,10:05:45.167,REG1,,#1: Error: Not enough measures for calculating regression data,,,,,,,,,,,,,,,
-,24-07-22,10:05:45.167,REG2,,#1: Error: Not enough measures for calculating regression data,,,,,,,,,,,,,,,
-LCE,24-07-22,10:05:46.752,FO,1,338,715,0,0.527,0.0,0,0.84,0,0,0,0,0,0,338,715,0.527
 ,24-07-22,10:06:18.166,REG1,,"#1: alpha: - , ETRm: - , Ik: -   ( beta: - 0.007, ETRmPot: 28.172 )   (Platt et al. 1980)",,,,,,,,,,,,,,,
 ,24-07-22,10:06:18.166,REG2,,"#1: alpha: 0.116, ETRm: 42.665, Ik: 369.000   (Jassby and Platt 1976)",,,,,,,,,,,,,,,
 LCS,24-07-22,10:06:19.568,FO,2,517,1082,0,0.522,0.0,0,0.84,0,0,0,0,0,0,517,1082,0.522
