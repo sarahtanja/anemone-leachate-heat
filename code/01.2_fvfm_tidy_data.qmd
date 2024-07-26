@@ -79,7 +79,7 @@ fvfm_0620 <- fvfm_0620 %>%
   rename(Fm = '1:Fm') %>% 
   rename(Fo = '1:Fo') %>% 
   #rename(YII = '1:Y (II)') %>% 
-  mutate(days_of_exposure = 1) %>% 
+  mutate(days_of_exposure = 2) %>% 
   mutate(treatment = str_c(temp, leachate, sep = "_")) %>% 
   mutate(treatment = as.factor(treatment)) %>% 
   select(1,2, 6:15)
@@ -95,7 +95,7 @@ fvfm_0621 <- fvfm_0621 %>%
   rename(Fm = '1:Fm') %>% 
   rename(Fo = '1:Fo') %>% 
   #rename(YII = '1:Y (II)') %>% 
-  mutate(days_of_exposure = 1) %>% 
+  mutate(days_of_exposure = 3) %>% 
   mutate(treatment = str_c(temp, leachate, sep = "_")) %>% 
   mutate(treatment = as.factor(treatment)) %>% 
   select(1,2, 6:15)
@@ -109,7 +109,7 @@ fvfm_0622 <- fvfm_0622 %>%
   rename(Fm = '1:Fm') %>% 
   rename(Fo = '1:Fo') %>% 
   #rename(YII = '1:Y (II)') %>% 
-  mutate(days_of_exposure = 1) %>% 
+  mutate(days_of_exposure = 4) %>% 
   mutate(treatment = str_c(temp, leachate, sep = "_")) %>% 
   mutate(treatment = as.factor(treatment)) %>% 
   select(1,2, 6:15)
