@@ -33,13 +33,11 @@ a Walz Diving PAMII...
 # Install packages
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
 if ("dplyr" %in% rownames(installed.packages()) == 'FALSE') install.packages('dplyr')
-if ("lubridate" %in% rownames(installed.packages()) == 'FALSE') install.packages('lubridate')
 if ("stringr" %in% rownames(installed.packages()) == 'FALSE') install.packages('stringr')
 
 # Load packages
 library(dplyr)
 library(tidyverse)
-library(lubridate)
 library(stringr)
 ```
 
@@ -442,6 +440,16 @@ for (i in seq_along(list_rlc_0622)){
 
 > Why are there only 58 rows!?
 
+# Bind regression variables (alpha, rETRm, Ik) dataset to long-form
+
+```{r}
+reg_alldays <- do.call(rbind, list(regression_0619, 
+                                   regression_0620,
+                                   regression_0621,
+                                   regression_0622))
+```
+
+
 # Save regression dataframes as .csv
 
 ```{r}
@@ -449,6 +457,7 @@ write.csv(regression_0619, file = "../output/reg_day1.csv" )
 write.csv(regression_0620, file = "../output/reg_day2.csv" )
 write.csv(regression_0621, file = "../output/reg_day3.csv" )
 write.csv(regression_0622, file = "../output/reg_day4.csv" )
+write.csv(reg_alldays, file = "../output/reg_alldays.csv")
 ```
 
 ::: callout-important
