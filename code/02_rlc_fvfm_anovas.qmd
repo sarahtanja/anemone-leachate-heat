@@ -33,26 +33,42 @@ https://courses.washington.edu/psy524a/\_book/repeated-measures-anova.html#repea
 
 Generalized Linear Mixed Models (GLMM) resources:
 
+Mixed Design Examples:
+<https://courses.washington.edu/psy524a/_book/linear-mixed-models.html#using-lmer-for-a-repeated-measures-design:~:text=example%2C%20mixed%20designs%3A-,24.3%20Mixed%20Design%20Example%3A%20Effect%20of%20Napping%20and%20Time%20on%20Perceptual%20Performance,-A%20mixed%2Ddesign>
+
+> This is a mixed design: The experiment has one within-subjects factor
+> and two between-subjects factors. The days of exposure are the
+> within-subjects factor (each anemones was measured four times), and
+> the leachate condition (control vs. low vs. high) and the temperature
+> (ambient vs. hot) are the between-subjects factors.
+
 # Install and load packages
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("Matrix")
+```
 
 ```{r}
 # Install packages
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
 if ("dplyr" %in% rownames(installed.packages()) == 'FALSE') install.packages('dplyr')
 if ("ggplot2" %in% rownames(installed.packages()) == 'FALSE') install.packages('ggplot2')
-if ("geomtextpath" %in% rownames(installed.packages()) == 'FALSE') install.packages('geomtextpath')
 if ("hrbrthemes" %in% rownames(installed.packages()) == 'FALSE') install.packages('hrbrthemes')
 if ("lme4" %in% rownames(installed.packages()) == 'FALSE') install.packages('lme4')
+if ("lmerTest" %in% rownames(installed.packages()) == 'FALSE') install.packages('lmerTest')
+if ("Rmisc" %in% rownames(installed.packages()) == 'FALSE') install.packages('Rmisc')
 
-remotes::install_github("AllanCameron/geomtextpath", quiet = TRUE)
 
 # Load packages
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
-library(geomtextpath)
 library(hrbrthemes)
 library(lme4)
+library(lmerTest)
+library(Rmisc)
 ```
 
 # Pull in RLC regression variables data
@@ -159,18 +175,22 @@ fvfm_alldays <- do.call(rbind, list(fvfm_day1, fvfm_day2, fvfm_day3, fvfm_day4))
 summary(fvfm_alldays)
 ```
 
+## Data exploration
+
 ```{r}
-ggplot(fvfm_alldays, aes(x = days_of_exposure, y = FvFm, color = treatment)) +
-  geom_boxplot() +
-  #geom_labelsmooth(aes(label = treatment), fill = "white",
-  #              method = "lm", formula = y ~ x,
-  #              size = 3, linewidth = 1, boxlinewidth = 0.4) +
-  theme_bw()
+# get the means and standard errors
+fvfm.summary <- summarySE(fvfm_alldays, measurevar="FvFm", groupvars=c("leachate","temp","days_of_exposure"))
+
+ggplot(fvfm.summary, aes(x=days_of_exposure, y=FvFm, colour = leachate, group = temp)) +
+  geom_errorbar(aes(ymin=FvFm-se, ymax=FvFm+se), width=.2) +
+  geom_line() +
+  theme_bw() +
+  geom_point(size = 5)
 ```
 
 ```{r}
 # Create the boxplot
-ggplot(fvfm_alldays, aes(x = treatment, y = FvFm, fill = treatment)) +
+ggplot(fvfm_alldays, aes(x = treatment, y = FvFm, color = treatment)) +
   geom_boxplot() +
   facet_wrap(~ days_of_exposure) +
   theme_bw() +
@@ -178,20 +198,26 @@ ggplot(fvfm_alldays, aes(x = treatment, y = FvFm, fill = treatment)) +
     title = "Photosynthetic efficiency (Fv/Fm) across Treatments and Days",
     x = "Treatment",
     y = "Photosynthetic efficiency (Fv/Fm)"
-  )
+  ) + 
+  theme (axis.text.x = element_blank())  # Remove x-axis labels
 ```
+
+### Boxplots
+
+#### Facetgrid
 
 ```{r}
 # Create the boxplot
-fvfm_byday <- ggplot(fvfm_alldays, aes(x = treatment, y = FvFm, fill = treatment)) +
+fvfm_byday <- ggplot(fvfm_alldays, aes(x = treatment, y = FvFm, color = treatment)) +
   geom_boxplot() +
-  facet_grid(. ~ days_of_exposure) +
+  facet_grid(. ~ days_of_exposure, switch = "x") +
   theme_bw() +
   labs(
-    title = "Photosynthetic efficiency (Fv/Fm) across Treatments and Days",
-    x = "Treatment",
+    title = "Photosynthetic efficiency (Fv/Fm) across Treatments and Days of Exposure",
+    x = "Days of Exposure",
     y = "Photosynthetic efficiency (Fv/Fm)"
-  )
+  ) +
+  theme(axis.text.x = element_blank())  # Remove x-axis labels
 
 fvfm_byday
 
@@ -200,12 +226,54 @@ ggsave("../output/fvfm_byday_plot.png", plot = fvfm_byday, width = 10, height = 
 ```
 
 ```{r}
+# Create the boxplot
+fvfm_byday_treatment <- ggplot(fvfm_alldays, aes(x = as.factor(treatment), y = FvFm, color = as.factor(days_of_exposure))) +
+  geom_boxplot() +
+  facet_grid(. ~ treatment, switch = "x", scales = "free_x") +
+  theme_bw() +
+  labs(
+    title = "Photosynthetic efficiency (Fv/Fm) across Treatments and Days of Exposure",
+    x = "Treatment",
+    y = "Photosynthetic efficiency (Fv/Fm)"
+  ) +
+  theme(axis.text.x = element_blank(), # remove x-axis labels
+    strip.text = element_text(size = 6)  # adjust facet label size
+  )  
+
+fvfm_byday_treatment
+
+# save the plot as a .png
+ggsave("../output/fvfm_byday_treatment_plot.png", plot = fvfm_byday_treatment, width = 10, height = 6, dpi = 600)
+```
+
+```{r}
+# Create the boxplot
+fvfm_byday_treatment <- ggplot(fvfm_alldays, aes(x = as.factor(days_of_exposure), y = FvFm, fill = as.factor(days_of_exposure))) +
+  geom_boxplot() +
+  facet_wrap(~ treatment, scales = "free_x") +
+  theme_bw() +
+  labs(
+    title = "Photosynthetic efficiency (Fv/Fm) across Treatments and Days of Exposure",
+    x = "Days of Exposure",
+    y = "Photosynthetic efficiency (Fv/Fm)"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Adjust x-axis labels for readability
+    strip.text = element_text(size = 12)  # Optional: adjust facet label size
+  )
+
+fvfm_byday_treatment
+```
+
+#### Combined x-axis
+
+```{r}
 
 # Create a new column combining days_of_exposure and treatment
 fvfm_alldays$day_treatment <- interaction(fvfm_alldays$days_of_exposure, fvfm_alldays$treatment)
 
 # Create the boxplot
-fvfm_combo <- ggplot(fvfm_alldays, aes(x = day_treatment, y = FvFm, fill = treatment)) +
+fvfm_combo <- ggplot(fvfm_alldays, aes(x = day_treatment, y = FvFm, fill = leachate, color = temp)) +
   geom_boxplot() +
   theme_bw() +
   labs(
@@ -218,11 +286,11 @@ fvfm_combo <- ggplot(fvfm_alldays, aes(x = day_treatment, y = FvFm, fill = treat
 fvfm_combo
 
 # save the plot as a .png
-ggsave("../output/fvfm_combo_plot.png", plot = fvfm, width = 10, height = 6, dpi = 600)
+ggsave("../output/fvfm_combo_plot.png", plot = fvfm_combo, width = 10, height = 6, dpi = 600)
 
 ```
 
-## Anova
+## ANOVA \| one-way, each day
 
 ### Day 1
 
@@ -264,280 +332,92 @@ fvfm_aov_4 <- aov(FvFm ~ treatment,
 summary(fvfm_aov_4)
 ```
 
+## Across Days
+
+### (GLMM)
+
 ```{r}
+lmer.fvfm <- lmer(FvFm ~ leachate*temp*days_of_exposure + (1|sample_id), data=fvfm_alldays)
 
-FvFm <- ggplot(photobot_results) +
-  aes(x = treatment, y = FvFm, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. Photosynthetic efficiency (Fv/Fm)",
-    x = "Leachate concentration (mg/L)",
-    y = "Photosynthetic efficiency (Fv/Fm)"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100","PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4","dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4")) 
-
-FvFm
-
-# Save the ggplot object to a PNG file
-ggsave(filename = "FvFm.png", plot = FvFm, width = 11, height = 6, dpi = 600)
-
+anova(lmer.fvfm)
 ```
+
+### (multiple measures ANOVA)
 
 # Alpha
 
-## Day 1
+Bind regression variables (alpha, rETRm, Ik) dataset to long-form
 
 ```{r}
-Alpha_1 <- ggplot(regression_0619) +
-  aes(x = treatment, y = alpha, fill= leachate) +
+reg_alldays <- do.call(rbind, list(reg_day1, reg_day2, reg_day3, reg_day4))
+
+summary(reg_alldays)
+```
+
+### Boxplots
+
+```{r}
+
+# Create a new column combining days_of_exposure and treatment
+reg_alldays$day_treatment <- interaction(reg_alldays$days_of_exposure, reg_alldays$treatment)
+
+# Create the boxplot
+alpha_combo <- ggplot(reg_alldays, aes(x = day_treatment, y = alpha, color = treatment)) +
   geom_boxplot() +
-  scale_x_discrete(limits = c("ambient_control", "hot_control", 
-                              "ambient_low", "hot_low", 
-                              "ambient_high", "hot_high")) +
-  scale_y_continuous(breaks = pretty(regression_0619$alpha, n = 5)) + # Limit number of ticks
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Alpha values on the 1st day of exposure",
-    x = "",
-    y = "Alpha"
-  ) 
-
-Alpha_1
-
-# Save the ggplot object to a PNG file
-#ggsave(filename = "Alpha.png", plot = Alpha, width = 11, height = 6, dpi = 300)
-```
-
-## anova
-
-temp
-
-```{r}
-alpha_aov <- aov(alpha ~ temp,
-  data = regression_0619
-)
-
-summary(alpha_aov)
-```
-
-leachate
-
-```{r}
-alpha_aov <- aov(alpha ~ leachate,
-  data = regression_0619
-)
-
-summary(alpha_aov)
-```
-
-temp\*leachate
-
-```{r}
-alpha_aov <- aov(alpha ~ temp*leachate,
-  data = regression_0619
-)
-
-summary(alpha_aov)
-```
-
-### plot
-
-```{r}
-PVCAlpha <- ggplot(photobot_pvc) +
-  aes(x = treatment, y = alpha, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. Alpha",
-    x = "Leachate concentration (mg/L)",
-    y = "Alpha"
+  theme_bw() +
+  labs(
+    title = "Alpha (a) across Treatments and Days",
+    x = "Days of Exposure and Treatment",
+    y = "Alpha (a)"
   ) +
-  scale_x_discrete(labels = c("Control ", "PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4")) 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-PVCAlpha
+alpha_combo
 
-# Save the ggplot object to a PNG file
-ggsave(filename = "PVCAlpha.png", plot = PVCAlpha, width = 11, height = 6, dpi = 300)
-
+# save the plot as a .png
+ggsave("../output/alpha_combo_plot.png", plot = alpha_combo, width = 10, height = 6, dpi = 600)
 ```
 
-Alpha (α) Definition: Alpha (α) is defined as the initial slope of the
-Rapid Light Curve at low light intensities. It represents the
-photosynthetic efficiency, indicating how effectively a photosynthetic
-organism can use available light for photosynthesis under low light
-conditions. A higher alpha value indicates that the photosynthetic
-organism is highly efficient at utilizing low light levels, which can be
-crucial for survival in shaded or low-light environments. Conversely, a
-lower alpha suggests less efficiency in low light conditions. The alpha
-value is calculated from the initial linear portion of the Rapid Light
-Curve. It is determined by fitting a straight line to the data points at
-the lowest light intensities and calculating the slope of this line. The
-steeper the slope, the higher the photosynthetic efficiency at low
-light.
+# Saturating Irradiance (Ek/Ik)
 
-### anova
+## Boxplots
 
 ```{r}
-alpha_pvc_aov <- aov(alpha ~ treatment,
-  data = photobot_pvc
-)
-
-summary(alpha_pvc_aov)
-```
-
-### Dunnett's test
-
-Is the lowest PVC leachate concentration actually larger than the
-control? Or is this a `Type II error`, or error of multiple tests? I
-followed the [stats and r blog to conduct a post-hoc Dunnett's
-test](https://statsandr.com/blog/anova-in-r/#post-hoc-test:~:text=plot(TukeyHSD(res_aov))-,Dunnett%E2%80%99s%20test,-We%20have%20seen)
-on the above ANOVA result.
-
-```{r}
-if ("multcomp" %in% rownames(installed.packages()) == 'FALSE') install.packages('multcomp')
-library(multcomp)
-
-# Make sure `treatment` is a factor
-
-
-# Dunnett's test:
-post_test <- glht(alpha_pvc_aov,
-  linfct = mcp(treatment = "Dunnett")
-)
-
-summary(post_test)
-```
-
-::: callout-warning
-The Dunnett's test adjusted *p* value comparing the lowest PVC
-concentration to the control (*p* = .0671) indicated that the treatment
-is not significantly different from the control.
-:::
-
-::: callout-note
-Note that in R, by default, the reference category for a [factor
-variable](https://statsandr.com/blog/data-types-in-r/#factor) is the
-first category in alphabetical order. This is the reason that, by
-default, the reference species is `Control`.
-
-The reference category can be changed with the `relevel()` function (or
-with the [`{questionr}`
-addin](https://statsandr.com/blog/rstudio-addins-or-how-to-make-your-coding-life-easier/#reordering-factors)).
-Look
-[here](https://statsandr.com/blog/anova-in-r/#post-hoc-test:~:text=%23%20Change%20reference%20category%3A)
-for an example.
-:::
-
-Examining the 95% family-wise confidence level comparing the treatments
-to the controls:
-
-```{r}
-
-# Open the PNG device
-png(filename = "Dunnett.png", width = 800, height = 600, res = 72)
-
-### use sufficiently large upper margin
-old.par <- par(mai=c(1,2.25,1.25,0.25), no.readonly=TRUE)
-### plot
-plot(post_test)
-par(old.par)
-
-# Close the device
-dev.off()
-
-```
-
-```{r}
-### use sufficiently large upper margin
-old.par <- par(mai=c(1,2.25,1.25,0.25))
-### plot
-plot(post_test)
-par(old.par)
-```
-
-## PP only?
-
-```{r}
-photobot_pp <- photobot_results %>% 
-  filter(treatment %in% c('Control', 'PP_A_0.01_mgL', 'PP_A_0.1_mgL', 'PP_A_1_mgL', 'PP_A_10_mgL', 'PP_A_100_mgL'))
-
-photobot_pp
-```
-
-```{r}
-alpha_pp_aov <- aov(alpha ~ treatment,
-  data = photobot_pp
-)
-
-summary(alpha_pp_aov)
-```
-
-```{r}
-ggplot(photobot_pp) +
-  aes(x = treatment, y = alpha, fill= treatment) +
+# Create the boxplot
+Ik_combo <- ggplot(reg_alldays, aes(x = day_treatment, y = Ik, color = treatment)) +
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. Alpha",
-    x = "Leachate concentration (mg/L)",
-    y = "Alpha"
+  theme_bw() +
+  labs(
+    title = "Saturating Irradiance (Ik) across Treatments and Days",
+    x = "Days of Exposure and Treatment",
+    y = "Saturating Irradiance (Ik)"
   ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4"))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+Ik_combo
+
+# save the plot as a .png
+ggsave("../output/Ik_combo_plot.png", plot = Ik_combo, width = 10, height = 6, dpi = 600)
 ```
 
-# ETRm
+# rETR~max~
+
+## Boxplots
 
 ```{r}
-etrm_aov <- aov(ETRm ~ treatment,
-  data = photobot_results
-)
-
-summary(etrm_aov)
-```
-
-```{r}
-ggplot(photobot_results) +
-  aes(x = treatment, y = ETRm, fill= treatment) +
+# Create the boxplot
+rETRm_combo <- ggplot(reg_alldays, aes(x = day_treatment, y = ETRm, color = treatment)) +
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Concentration vs. rETRm",
-    x = "Leachate concentration (mg/L)",
-    y = "rETRm"
+  theme_bw() +
+  labs(
+    title = "rETRmax across Treatments and Days",
+    x = "Days of Exposure and Treatment",
+    y = "rETRmax"
   ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100","PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4","dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4"))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+rETRm_combo
+
+# save the plot as a .png
+ggsave("../output/rETRm_combo_plot.png", plot = rETRm_combo, width = 10, height = 6, dpi = 600)
 ```
-
-# Ik
-
-```{r}
-ik_aov <- aov(Ik ~ treatment,
-  data = photobot_results
-)
-
-summary(ik_aov)
-```
-
-```{r}
-Ik <- ggplot(photobot_results) +
-  aes(x = treatment, y = Ik, fill= treatment) +
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-   labs(
-    title = "Leachate concentration vs. Saturating Irradiance (Ik)",
-    x = "Leachate concentration (mg/L)",
-    y = "Saturating Irradiance (PAR umol/m2/s)"
-  ) +
-  scale_x_discrete(labels = c("Control ", "PPa 0.01", "PPa 0.1","PPa 1", "PPa 10", "PPa 100","PVC 0.01", "PVC 0.1", "PVC 1", "PVC 10", "PVC 100")) +  
-  scale_fill_manual(values = c("seashell", "coral", "coral1","coral2","coral3", "coral4","dodgerblue","dodgerblue1","dodgerblue2", "dodgerblue3","dodgerblue4"))
-
-Ik
-
-```
-
-What the hell is wrong with the control!?
