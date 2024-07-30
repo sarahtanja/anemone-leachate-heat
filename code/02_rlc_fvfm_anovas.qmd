@@ -152,7 +152,7 @@ temp_colors <- c("hot" = brewer.pal(9, "YlOrBr")[7],
 
 # Assuming fvfm_alldays is your dataframe
 # Create the boxplot with custom colors for temp and viridis for leachate
-fvfm_byday <- ggplot(fvfm_alldays, aes(x = leachate, y = FvFm, color = temp, fill = leachate)) +
+fvfm_facet <- ggplot(fvfm_alldays, aes(x = leachate, y = FvFm, color = temp, fill = leachate)) +
   geom_boxplot() +
   facet_grid(. ~ days_of_exposure, switch = "x") +
   theme_bw() +
@@ -168,10 +168,10 @@ fvfm_byday <- ggplot(fvfm_alldays, aes(x = leachate, y = FvFm, color = temp, fil
   scale_fill_brewer(palette = "Greys")  
     # Pale sequential fill for leachate
 
-fvfm_byday
+fvfm_facet
 
 # save the plot as a .png
-ggsave("../output/fvfm_byday_treatment_plot.png", plot = fvfm_byday_treatment, width = 10, height = 6, dpi = 600)
+ggsave("../output/fvfm_facet_plot.png", plot = fvfm_facet, width = 10, height = 6, dpi = 600)
 ```
 
 ##### By Treatment
@@ -321,7 +321,7 @@ temp_colors <- c("hot" = brewer.pal(9, "YlOrBr")[7],
 
 # reg_alldays is your dataframe
 # Create the boxplot with custom colors for temp and viridis for leachate
-alpha_byday <- ggplot(reg_alldays, aes(x = leachate, y = alpha, color = temp, fill = leachate)) +
+alpha_facet <- ggplot(reg_alldays, aes(x = leachate, y = alpha, color = temp, fill = leachate)) +
   geom_boxplot() +
   facet_grid(. ~ days_of_exposure, switch = "x") +
   theme_bw() +
@@ -337,10 +337,10 @@ alpha_byday <- ggplot(reg_alldays, aes(x = leachate, y = alpha, color = temp, fi
   scale_fill_brewer(palette = "Greys")  
     # Pale sequential fill for leachate
 
-alpha_byday
+alpha_facet
 
 # save the plot as a .png
-ggsave("../output/alpha_byday_plot.png", plot = alpha_byday, width = 10, height = 6, dpi = 600)
+ggsave("../output/alpha_facet_plot.png", plot = alpha_facet, width = 10, height = 6, dpi = 600)
 ```
 
 ## Boxplots
@@ -477,7 +477,7 @@ labs(
 ETRm_line
 
 # save the plot as a .png
-ggsave("../output/rETR_line_plot.png", plot = alpha_line, width = 10, height = 6, dpi = 600)
+ggsave("../output/rETRm_line_plot.png", plot = ETRm_line, width = 10, height = 6, dpi = 600)
 ```
 
 ```{r}
