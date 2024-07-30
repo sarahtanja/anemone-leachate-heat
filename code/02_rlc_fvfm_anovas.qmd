@@ -251,8 +251,8 @@ anova(lmer.fvfm)
 
 > Duration of experiment had a significant effect (p = 1.957e-07 \*\*\*)
 > on dark-adapted quantum yield (Fv/Fm)
-
-# Pull in RLC data
+>
+> # Pull in RLC data
 
 reg stands for regression from Jasby & Platt 1979
 
@@ -273,7 +273,7 @@ summary(reg_alldays)
 
 # Alpha
 
-## Data exploration
+## Line plot
 
 ```{r}
 # Define custom colors for temp using ColorBrewer
@@ -288,11 +288,11 @@ alpha.summary <- summarySE(reg_alldays, measurevar="alpha", groupvars=c("leachat
 # Set the order of the temp factor
 alpha.summary$temp <- factor(alpha.summary$temp, levels = c("hot", "ambient"))
 
-ggplot(alpha.summary, aes(x=days_of_exposure, y=alpha, colour = temp, shape = leachate)) +
-  geom_errorbar(aes(ymin=alpha-se, ymax=alpha+se), width=.2) +
+alpha_line <- ggplot(alpha.summary, aes(x=days_of_exposure, y=alpha, colour = temp, shape = leachate, linetype = leachate)) +
+  geom_errorbar(aes(ymin=alpha-se, ymax=alpha+se), width=.05) +
   geom_line() +
   theme_bw() +
-  geom_point(size = 2)+ 
+  geom_point(size = 3)+ 
   scale_color_manual(values = temp_colors)+ 
     # Custom colors for temp
   labs(
@@ -300,7 +300,14 @@ ggplot(alpha.summary, aes(x=days_of_exposure, y=alpha, colour = temp, shape = le
     x = "Day(s) of Exposure",
     y = "Alpha (a)"
   ) 
+
+alpha_line
+
+# save the plot as a .png
+ggsave("../output/alpha_line_plot.png", plot = alpha_line, width = 10, height = 6, dpi = 600)
 ```
+
+## Facetplot
 
 ```{r}
 # Set the order of the temp factor
@@ -331,6 +338,9 @@ alpha_byday <- ggplot(reg_alldays, aes(x = leachate, y = alpha, color = temp, fi
     # Pale sequential fill for leachate
 
 alpha_byday
+
+# save the plot as a .png
+ggsave("../output/alpha_byday_plot.png", plot = alpha_byday, width = 10, height = 6, dpi = 600)
 ```
 
 ## Boxplots
@@ -372,6 +382,40 @@ anova(lmer.alpha)
 ## Boxplots
 
 ```{r}
+# Set the order of the temp factor
+reg_alldays$temp <- factor(reg_alldays$temp, levels = c("hot", "ambient"))
+
+# Define custom colors for temp using ColorBrewer
+temp_colors <- c("hot" = brewer.pal(9, "YlOrBr")[7], 
+                      # Orange/Red for heat
+                   "ambient" = brewer.pal(9, "YlGnBu")[5]) 
+                      # Blue/Green for ambient
+
+# reg_alldays is your dataframe
+# Create the boxplot with custom colors for temp and viridis for leachate
+Ik_byday <- ggplot(reg_alldays, aes(x = leachate, y = Ik, color = temp, fill = leachate)) +
+  geom_boxplot() +
+  facet_grid(. ~ days_of_exposure, switch = "x") +
+  theme_bw() +
+  labs(
+    title = "Saturating Irradiance (Ik) across Treatments and Days",
+    x = "Day(s) of Exposure",
+    y = "Saturating Irradiance (Ik)"
+  ) +
+  theme(axis.text.x = element_blank()) +  
+    # Remove x-axis labels
+  scale_color_manual(values = temp_colors) +  
+    # Custom colors for temp
+  scale_fill_brewer(palette = "Greys")  
+    # Pale sequential fill for leachate
+
+Ik_byday
+
+# save the plot as a .png
+ggsave("../output/Ik_facet_plot.png", plot = Ik_byday, width = 10, height = 6, dpi = 600)
+```
+
+```{r}
 # Create the boxplot
 Ik_combo <- ggplot(reg_alldays, aes(x = day_treatment, y = Ik, color = treatment)) +
   geom_boxplot() +
@@ -405,6 +449,38 @@ saturating irradiance (Ik)
 ## Data exploration
 
 ```{r}
+# Define custom colors for temp using ColorBrewer
+temp_colors <- c("hot" = brewer.pal(9, "YlOrBr")[7], 
+                      # Orange/Red for heat
+                   "ambient" = brewer.pal(9, "YlGnBu")[5]) 
+                      # Blue/Green for ambient
+
+# get the means and standard errors
+ETRm.summary <- summarySE(reg_alldays, measurevar="ETRm", groupvars=c("leachate","temp","days_of_exposure"))
+
+# Set the order of the temp factor
+ETRm.summary$temp <- factor(ETRm.summary$temp, levels = c("hot", "ambient"))
+
+ETRm_line <- ggplot(ETRm.summary, aes(x=days_of_exposure, y=ETRm, colour = temp, shape = leachate, linetype = leachate)) +
+  geom_errorbar(aes(ymin=ETRm-se, ymax=ETRm+se), width=.05) +
+  geom_line() +
+  theme_bw() +
+  geom_point(size = 3)+ 
+  scale_color_manual(values = temp_colors)+ 
+    # Custom colors for temp
+labs(
+    title = "Maximum Relative Electron Transport Rate (rETRmax) across Treatments and Days",
+    x = "Day(s) of Exposure",
+    y = "Maximum Relative Electron Transport Rate (rETRmax)"
+  )
+
+ETRm_line
+
+# save the plot as a .png
+ggsave("../output/rETR_line_plot.png", plot = alpha_line, width = 10, height = 6, dpi = 600)
+```
+
+```{r}
 # get the means and standard errors
 ETRm.summary <- summarySE(reg_alldays, measurevar="ETRm", groupvars=c("leachate","temp","days_of_exposure"))
 
@@ -416,6 +492,40 @@ ggplot(ETRm.summary, aes(x=days_of_exposure, y=ETRm, colour = temp, shape = leac
 ```
 
 ## Boxplots
+
+```{r}
+# Set the order of the temp factor
+reg_alldays$temp <- factor(reg_alldays$temp, levels = c("hot", "ambient"))
+
+# Define custom colors for temp using ColorBrewer
+temp_colors <- c("hot" = brewer.pal(9, "YlOrBr")[7], 
+                      # Orange/Red for heat
+                   "ambient" = brewer.pal(9, "YlGnBu")[5]) 
+                      # Blue/Green for ambient
+
+# reg_alldays is your dataframe
+# Create the boxplot with custom colors for temp and viridis for leachate
+rETRm_facet <- ggplot(reg_alldays, aes(x = leachate, y = ETRm, color = temp, fill = leachate)) +
+  geom_boxplot() +
+  facet_grid(. ~ days_of_exposure, switch = "x") +
+  theme_bw() +
+  labs(
+    title = "Maximum Relative Electron Transport Rate (rETRmax) across Treatments and Days",
+    x = "Day(s) of Exposure",
+    y = "Maximum Relative Electron Transport Rate (rETRmax)"
+  ) +
+  theme(axis.text.x = element_blank()) +  
+    # Remove x-axis labels
+  scale_color_manual(values = temp_colors) +  
+    # Custom colors for temp
+  scale_fill_brewer(palette = "Greys")  
+    # Pale sequential fill for leachate
+
+rETRm_facet
+
+# save the plot as a .png
+ggsave("../output/rETRm_facet_plot.png", plot = rETRm_facet, width = 10, height = 6, dpi = 600)
+```
 
 ```{r}
 # Create a named vector for labels
