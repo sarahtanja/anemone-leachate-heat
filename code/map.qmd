@@ -1,0 +1,64 @@
+
+
+
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+## install packages
+if (!require("tidyverse", character.only = TRUE)) { install.packages("tidyverse")}
+if (!require("kableExtra", character.only = TRUE)) { install.packages("kableExtra")}
+if (!require("leaflet", character.only = TRUE)){ install.packages("leaflet")}
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+## load libraries
+library(tidyverse)
+library(kableExtra)
+library(leaflet)
+```
+
+## Data sheet
+
+```{r}
+anemone_collection <- read_csv('18MAR24-anemone-collections.csv',
+                               col_types = cols(
+                                 date = col_date(format = "%m/%d/%Y"),
+                                 timePST = col_time(format = "%H:%M"),
+                                 site = col_character(),
+                                 aggregate = col_factor(),
+                                 lat = col_double(),
+                                 lon = col_double()
+                               ))
+```
+
+```{r}
+anemone_collection %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+
+```
+
+```{r}
+# Prepare the text for the tooltip:
+mytext <- paste(
+   "Aggregate: ", anemone_collection$aggregate, "<br/>", 
+   "Date: ", anemone_collection$date) %>%
+  lapply(htmltools::HTML)
+```
+
+```{r}
+# Final Map
+pdp <- leaflet(anemone_collection) %>% 
+  addTiles()  %>% 
+  setView( lng = -122.539, lat = 47.318, zoom = 16 ) %>% 
+  addProviderTiles("Esri.WorldImagery") %>% 
+  addCircleMarkers(~lon, ~lat, 
+    fillColor = "orange", fillOpacity = 0.7, color="white", radius=8, stroke=FALSE,
+    label = mytext,
+    labelOptions = labelOptions( style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "13px", direction = "auto")
+  )
+
+pdp
+```
+
+
